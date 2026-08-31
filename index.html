@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIP.9999 v1.0</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: Arial;
+    }
+
+    header {
+      padding: 16px;
+      border-bottom: 1px solid #333;
+    }
+
+    #chat {
+      height: calc(100vh - 130px);
+      overflow-y: auto;
+      padding: 15px;
+    }
+
+    .msg {
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 12px;
+      white-space: pre-wrap;
+    }
+
+    .user {
+      background: #333;
+      margin-left: 15%;
+    }
+
+    .ai {
+      background: #222;
+      margin-right: 15%;
+    }
+
+    form {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      padding: 10px;
+      background: #111;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      background: #222;
+      color: white;
+      border: 1px solid #444;
+    }
+
+    button {
+      margin-left: 8px;
+      padding: 10px 16px;
+      border: 0;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <b>VIP.9999</b><br>
+  <small>AI Assistant v1.0</small>
+</header>
+
+<div id="chat">
+  <div class="msg ai">Xin chào! Mình là VIP.9999 🤖</div>
+</div>
+
+<form id="form">
+  <textarea id="input" placeholder="Nhập câu hỏi..."></textarea>
+  <button type="submit">Gửi</button>
+</form>
+
+<script>
+const form = document.getElementById("form");
+const input = document.getElementById("input");
+const chat = document.getElementById("chat");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const text = input.value.trim();
+  if (!text) return;
+
+  chat.innerHTML +=
+    `<div class="msg user">${escapeHtml(text)}</div>`;
+
+  input.value = "";
+
+  chat.innerHTML +=
+    `<div class="msg ai" id="loading">Đang suy nghĩ...</div>`;
+
+  try {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: text })
+    });
+
+    const data = await response.json();
+
+    document.getElementById("loading").remove();
+
+    chat.innerHTML +=
+      `<div class="msg ai">${escapeHtml(
+        data.answer || data.error || "Có lỗi xảy ra."
+      )}</div>`;
+
+  } catch (error) {
+    document.getElementById("loading").textContent =
+      "Chưa kết nối backend AI.";
+  }
+
+  chat.scrollTop = chat.scrollHeight;
+});
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+
+</body>
+</html>
